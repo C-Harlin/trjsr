@@ -1,7 +1,7 @@
 import math
 import torch
 from torch import nn
-from torchsummary import summary
+# from torchsummary import summary
 
 class Generator(nn.Module):
     def __init__(self, scale_factor):

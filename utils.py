@@ -1,13 +1,12 @@
-import math
+import math,os
 import json
 from PIL import Image, ImageDraw
 from collections import Counter
 import torch
-from torch import nn
 import random
 import numpy as np
-from torchvision.transforms import Compose, ToTensor, Resize, ToPILImage
-import pickle
+from torchvision.transforms import Compose, ToTensor, Resize
+
 def lonlat2meters(lon, lat):
     semimajoraxis = 6378137.0
     east = lon * 0.017453292519943295
@@ -78,32 +77,6 @@ def cell2anchor(xoffset, yoffset, pixel):
 
     return (left_upper_point_x, left_upper_point_y), (right_lower_point_x, right_lower_point_y)
 
-# def draw(seq, index, mode):
-#     img = Image.new("L", (region['imgsize_x'],region['imgsize_y']))
-#     cellset = Counter(seq).keys() # 覆盖的cell
-#     occurrence = Counter(seq).values() # 每个cell出现的次数
-#     for i, cell in enumerate(cellset):
-#         xoffset = cell % (region['imgsize_x']/region['pixelrange'])
-#         yoffset = int(cell / region['numy'])
-#         left_upper_point, right_lower_point = cell2anchor(xoffset, yoffset, region['pixelrange'])
-#         grayscale = 55 + list(occurrence)[i] * 40 if list(occurrence)[i] < 6 else 255 #每出现一次增加40像素值
-#         shape = [left_upper_point, right_lower_point]
-#         ImageDraw.Draw(img).rectangle(shape, fill=(grayscale))
-#     img.save("./image/{}_hr/{}.png".format(mode, index))
-
-# def draw_lr(seq, index, mode):
-#     img = Image.new("L", (region['imgsize_x_lr'],region['imgsize_y_lr']))
-#     cellset = Counter(seq).keys() # 覆盖的cell
-#     occurrence = Counter(seq).values() # 每个cell出现的次数
-#     for i, cell in enumerate(cellset):
-#         xoffset = cell % region['numx_lr']
-#         yoffset = int(cell / region['numy_lr'])
-#         left_upper_point, right_lower_point = cell2anchor(xoffset, yoffset, region['pixelrange_x_lr'], region['pixelrange_y_lr'])
-#         grayscale = 100 + list(occurrence)[i] * 50 if list(occurrence)[i] < 4 else 255 #每出现一次增加50像素值
-#         shape = [left_upper_point, right_lower_point]
-#         ImageDraw.Draw(img).rectangle(shape, fill=(grayscale))
-#     img.save("./image/{}_lr/{}.png".format(mode,index))
-
 def viz(traj,index):
     map = Image.open("./data/map.png")
     draw = ImageDraw.Draw(map)
@@ -170,14 +143,6 @@ def traj2cell_lr(seq):
         cell_seq.append(coord2cell_lr(x, y)) #轨迹点所处cell的id
     return cell_seq
 
-def traj2cell_test_hr(seq):
-    cell_seq = []
-    for j in range(seq.shape[0]): #对每一个轨迹点
-        x, y = lonlat2meters(seq[j][0], seq[j][1]) #将轨迹点坐标换算成米
-        # cell_x, cell_y = coord2cell(x, y) #轨迹点所处cell的坐标
-        cell_seq.append(coord2cell(x, y)) #轨迹点所处cell的id
-    return cell_seq
-
 # For LR image: transform the trajectory point into cell id, return the sequence of cell id
 def traj2cell_test_lr(seq):
     cell_seq = []
@@ -216,6 +181,15 @@ def create_dataset(traj, index, mode):
     downsample_rate = [0,0.2,0.4,0.6]
     distort_rate = [0,0.2,0.4,0.6]
     # viz(traj,index)
+    if not os.path.exists("image/src_train/"):
+        os.makedirs("image/src_train/")
+    if not os.path.exists("image/trg_train/"):
+        os.makedirs("image/trg_train/")
+    if not os.path.exists("image/src_val/"):
+        os.makedirs("image/src_val/")
+    if not os.path.exists("image/trg_val/"):
+        os.makedirs("image/trg_val/")
+
     num_1 = 0
     for rate_1 in distort_rate:
         noisetrip_1 = distort_lr(traj, rate_1)

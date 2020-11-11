@@ -1,17 +1,13 @@
 import argparse, os, shutil
 import torch
 import random
-from math import log10
 import torch.backends.cudnn as cudnn
 import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
-import torchvision.utils as utils
-from torchvision import models
-# import torch.utils.model_zoo as model_zoo
-from model import Generator,MyDiscriminator,MyGenerator
-from dataset import DatasetFromFolder, MyDataset, display_transform
+from model import MyDiscriminator,MyGenerator
+from dataset import MyDataset
 from tqdm import tqdm
 # from torchsummary import summary
 import pytorch_ssim
@@ -58,20 +54,6 @@ def main():
     criterion = nn.MSELoss(reduction="sum")
     criterion_e = nn.L1Loss(reduction="sum")
 
-    # --view layer size--
-    # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    # vgg = netG.to(device)
-    # summary(vgg, (1, 128, 161))
-    #---------or---------
-    # print("Model's state_dict:")
-    # for param_tensor in model.state_dict():
-    #     print(param_tensor, "\t", model.state_dict()[param_tensor].size())
-    #
-    # # Print optimizer's state_dict
-    # print("Optimizer's state_dict:")
-    # for var_name in optimizer.state_dict():
-    #     print(var_name, "\t", optimizer.state_dict()[var_name])
-
     if opt.cuda:
         netG.cuda()
         netD.cuda()
@@ -97,9 +79,7 @@ def main():
             print("=> no model found at '{}'".format(opt.pretrained))
     else:
         best_vec_loss = float('inf')
-    #-------use pretrained netG--------
-    # netG.load_state_dict(torch.load('checkpoint/checkpoint_G.pt')["netG"])
-    #----------------------------------
+
     results = {'d_loss':[], 'image_loss': [], 'g_loss': [], 'ssim': [], 'vec_mse':[],'img_mse':[]}
     for epoch in range(opt.start_epoch + 1, opt.num_epochs + opt.start_epoch + 1):
         train_bar = tqdm(train_loader)
