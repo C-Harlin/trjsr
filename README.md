@@ -13,7 +13,6 @@ This repository is the official implementation of On Efficient Computation of Tr
 ## Preprocessing
 
 ------
-
 1. Download dataset 
 
    ```shell
@@ -23,9 +22,9 @@ This repository is the official implementation of On Efficient Computation of Tr
 
 2. Generate trajectory images
 	
-	   ```shell
-	python preprocessing.py
-	python traj2img.py
+	```shell
+	python3.7 preprocessing.py
+	python3.7 traj2img.py
 	```
 	
 	The hyper parameters used in this experiment are stored in `hyper_parameters.json`, like the selected city area, image sizes and scale of the cell. 
@@ -36,8 +35,7 @@ This repository is the official implementation of On Efficient Computation of Tr
 
 ## Training
 
-------
-
+-----
 ```shell
 python3.7 train.py --cuda --num_epochs 4 --lr 0.0001
 ```
@@ -49,7 +47,6 @@ You can also use the parameter`--pretrained PATH_TO_PRETRAINED_MODEL`to load tra
 ## Evaluation
 
 ------
-
 Generate embedding vectors for trajectory similarity computation:
 ```shell
 python3.7 generate_data.py --model_path checkpoint/checkpoint_MyG_3_epoch_4.pt
