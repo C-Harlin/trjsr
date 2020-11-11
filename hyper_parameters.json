@@ -1,0 +1,19 @@
+{
+  "region":
+  {
+    "cityname":"porto",
+    "minlon":-8.7005,
+    "minlat":41.1001,
+    "maxlon":-8.5192,
+    "maxlat":41.2086,
+    "cellsize":100.0,
+    "imgsize_x":324,
+    "imgsize_y":256,
+    "cellsize_lr":200.0,
+    "imgsize_x_lr":162,
+    "imgsize_y_lr":128,
+    "pixelrange":2,
+    "pixelrange_lr":2
+  }
+}
+

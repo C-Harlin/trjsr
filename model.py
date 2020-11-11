@@ -131,27 +131,6 @@ class MyDiscriminator(nn.Module):
             nn.LeakyReLU(0.2),
             nn.Conv2d(8, 1, kernel_size=3, padding=1),
             )
-        # self.net = nn.Sequential(
-        #     nn.Conv2d(1, 16, kernel_size=3, padding=1),
-        #     nn.LeakyReLU(0.2),
-        #
-        #     nn.Conv2d(16, 16, kernel_size=3, stride=2, padding=1),
-        #     nn.BatchNorm2d(16),
-        #     nn.LeakyReLU(0.2),
-        #
-        #     nn.Conv2d(16, 16, kernel_size=3, stride=2, padding=1),
-        #     nn.BatchNorm2d(16),
-        #     nn.LeakyReLU(0.2),
-        #
-        #     nn.Conv2d(16, 16, kernel_size=3, stride=2, padding=1),
-        #     nn.BatchNorm2d(16),
-        #     nn.LeakyReLU(0.2),
-        #
-        #     nn.Conv2d(16, 1, kernel_size=3, padding=1),
-        # )
-        # self.fc1 = nn.Linear(32*40,1000)
-        # self.fc2 = nn.Linear(1024,512)
-        # self.fc3 = nn.Linear(2048,1024)
     def forward(self, x):
         x = self.net(x)
         x = x.view(-1, 32*40)
@@ -212,36 +191,3 @@ class lowdim(nn.Module):
         # x2 = self.fc2(x1)
         # x = self.fc3(x)
         return x
-
-# net = MyGenerator(2)
-# net = MyDiscriminator()
-# net = Discriminator()
-# device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-# net = net.to(device)
-# checkpoint = torch.load('checkpoint/bestmodel_G_2.pt')
-# start_epoch = checkpoint["epoch"]
-# net.load_state_dict(checkpoint["netG"])
-# summary(net, (1, 128, 162))
-# summary(net, (1, 256, 324))
-# class model(nn.Module):
-#     def __init__(self):
-#         super(model, self).__init__()
-#         a = list(net.children())
-#         block = [0,1,2,6]
-#         c = [a[i] for i in block]
-#         self.feature = nn.Sequential(*c)
-#         # for param in self.feature.parameters():
-#         #     param.requires_grad = False
-#     def forward(self, x):
-#         out = self.feature(x)
-#         return out
-# netContent = model()
-# summary(netContent, (1, 128, 162))
-# # print('# generator parameters:', sum(param.numel() for param in net.parameters()))
-# netD = lowdim()
-# device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-# netD = netD.to(device)
-# summary(netD, (64, 128, 162))
-# netG = Generator(2)
-# netG.to(device)
-# summary(netG, (1, 256, 322))

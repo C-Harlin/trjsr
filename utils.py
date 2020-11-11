@@ -55,7 +55,7 @@ def coord2cell(x,y):
     tmp = region['imgsize_x']/region['pixelrange']
     id = yoffset * tmp + xoffset
     return id
-#lr
+
 def coord2cell_lr(x, y):
     xoffset = (x - region['minlon']) / (region['maxlon'] - region['minlon']) * region['imgsize_x_lr'] / region[
         'pixelrange_lr']
@@ -67,7 +67,7 @@ def coord2cell_lr(x, y):
     id = yoffset * tmp + xoffset
     return id
 '''
-通过cell坐标计算cell像素块范围
+find the anchor points of the cell
 '''
 def cell2anchor(xoffset, yoffset, pixel):
     left_upper_point_x = xoffset * pixel
@@ -124,45 +124,47 @@ def lr_transform():
         ToTensor()
     ])
 
+# map cell id into pixel value of high-resolution image
 def draw(seq):
     img = Image.new("L", (region['imgsize_x'],region['imgsize_y']))
-    cellset = Counter(seq).keys() # 覆盖的cell
-    occurrence = Counter(seq).values() # 每个cell出现的次数
+    cellset = Counter(seq).keys() # all the different cell
+    occurrence = Counter(seq).values() # the number of the occurrences of each cell
     for i, cell in enumerate(cellset):
         xoffset = cell % (region['imgsize_x']/region['pixelrange'])
         yoffset = cell // (region['imgsize_x']/region['pixelrange'])
         left_upper_point, right_lower_point = cell2anchor(xoffset, yoffset, region['pixelrange'])
-        # grayscale = 55 + list(occurrence)[i] * 40 if list(occurrence)[i] < 6 else 255 #每出现一次增加40像素值
-        grayscale = 105 + list(occurrence)[i] * 50 if list(occurrence)[i] < 4 else 255 #每出现一次增加40像素值
+        grayscale = 105 + list(occurrence)[i] * 50 if list(occurrence)[i] < 4 else 255
         shape = [left_upper_point, right_lower_point]
         ImageDraw.Draw(img).rectangle(shape, fill=(grayscale))
     # img.save("./scp/hr/{}.png".format(len(seq)))
     return img
+
+# map cell id into pixel value of low-resolution image
 def draw_lr(seq):
     img = Image.new("L", (region['imgsize_x_lr'],region['imgsize_y_lr']))
-    cellset = Counter(seq).keys() # 覆盖的cell
-    occurrence = Counter(seq).values() # 每个cell出现的次数
+    cellset = Counter(seq).keys() # all the different cell
+    occurrence = Counter(seq).values() # the number of the occurrences of each cell
     for i, cell in enumerate(cellset):
         xoffset = cell % (region['imgsize_x_lr']/region['pixelrange_lr'])
         yoffset = cell // (region['imgsize_x_lr']/region['pixelrange_lr'])
         left_upper_point, right_lower_point = cell2anchor(xoffset, yoffset, region['pixelrange_lr'])
-        # grayscale = 55 + list(occurrence)[i] * 40 if list(occurrence)[i] < 6 else 255 #每出现一次增加40像素值
-        grayscale = 105 + list(occurrence)[i] * 50 if list(occurrence)[i] < 4 else 255 #每出现一次增加40像素值
+        grayscale = 105 + list(occurrence)[i] * 50 if list(occurrence)[i] < 4 else 255
         shape = [left_upper_point, right_lower_point]
         ImageDraw.Draw(img).rectangle(shape, fill=(grayscale))
     # img.save("./scp/lr/{}.png".format(len(seq)))
     return img
 
+# For HR image: transform the trajectory point into cell id, return the sequence of cell id
 def traj2cell(seq):
     cell_seq = []
-    for j in range(seq.shape[1]): #对每一个轨迹点
-        x, y = lonlat2meters(seq[0][j], seq[1][j]) #将轨迹点坐标换算成米
-        # cell_x, cell_y = coord2cell(x, y) #轨迹点所处cell的坐标
-        cell_seq.append(coord2cell(x, y)) #轨迹点所处cell的id
+    for j in range(seq.shape[1]): # for each trajectory point
+        x, y = lonlat2meters(seq[0][j], seq[1][j]) # transform the coordinates into meters
+        cell_seq.append(coord2cell(x, y)) # the cell id for this trajectory point
     return cell_seq
+
 def traj2cell_lr(seq):
     cell_seq = []
-    for j in range(seq.shape[1]): #对每一个轨迹点
+    for j in range(seq.shape[1]): # for each trajectory point
         x, y = lonlat2meters(seq[0][j], seq[1][j]) #将轨迹点坐标换算成米
         # cell_x, cell_y = coord2cell(x, y) #轨迹点所处cell的坐标
         cell_seq.append(coord2cell_lr(x, y)) #轨迹点所处cell的id
@@ -176,14 +178,15 @@ def traj2cell_test_hr(seq):
         cell_seq.append(coord2cell(x, y)) #轨迹点所处cell的id
     return cell_seq
 
+# For LR image: transform the trajectory point into cell id, return the sequence of cell id
 def traj2cell_test_lr(seq):
     cell_seq = []
-    for j in range(seq.shape[0]): #对每一个轨迹点
-        x, y = lonlat2meters(seq[j][0], seq[j][1]) #将轨迹点坐标换算成米
-        # cell_x, cell_y = coord2cell(x, y) #轨迹点所处cell的坐标
-        cell_seq.append(coord2cell_lr(x, y)) #轨迹点所处cell的id
+    for j in range(seq.shape[0]): # for each trajectory point
+        x, y = lonlat2meters(seq[j][0], seq[j][1])  # transform the coordinates into meters
+        cell_seq.append(coord2cell_lr(x, y)) # the cell id for this trajectory point
     return cell_seq
 
+# downsample
 def downsample(seq, rate):
     sample_seq = []
     for item in seq:
@@ -192,10 +195,11 @@ def downsample(seq, rate):
             sample_seq.append(item)
     return sample_seq
 
+# add Gaussian noise to coordinates
 def distort_lr(seq, rate):
     cell_seq = []
-    for j in range(seq.shape[1]): #对每一个轨迹点
-        x, y = lonlat2meters(seq[0][j], seq[1][j]) #将轨迹点坐标换算成米
+    for j in range(seq.shape[1]): # for each trajectory point
+        x, y = lonlat2meters(seq[0][j], seq[1][j]) # transform the coordinates into meters
         rand = random.randint(0, 9) / 10
         if rand < rate:
             x = x + 100 * np.random.normal()
@@ -204,8 +208,11 @@ def distort_lr(seq, rate):
     return cell_seq
 
 def create_dataset(traj, index, mode):
+    # generate high quality trajectories
     origin = traj2cell(traj)
     hr_img = ToTensor()(draw(origin))
+
+    # generate low quality trajectories
     downsample_rate = [0,0.2,0.4,0.6]
     distort_rate = [0,0.2,0.4,0.6]
     # viz(traj,index)
@@ -217,6 +224,7 @@ def create_dataset(traj, index, mode):
             noisetrip_2 = downsample(noisetrip_1,rate_2)
             lr_img = ToTensor()(draw_lr(noisetrip_2))
 
+            # save image pair for training
             torch.save(lr_img, "image/src_{}/{}.data".format(mode, index * 16 + num_1 * 4 + num_2))
             torch.save(hr_img, "image/trg_{}/{}.data".format(mode, index * 16 + num_1 * 4 + num_2))
             num_2+=1
