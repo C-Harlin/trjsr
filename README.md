@@ -1,4 +1,4 @@
-# On Efficient Computation of Trajectory Similarity via Single Image Super-Resolution
+# On Accurate Computation of Trajectory Similarity via Single Image Super-Resolution
 
 ------
 
